@@ -1,0 +1,20 @@
+name: Structural lint
+on:
+  pull_request:
+    paths: ['**/*.py']
+
+permissions:
+  contents: read
+  pull-requests: write   # lets the Action post its findings as a PR comment
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history so the Action can diff the PR
+      - uses: neurarch-ai/neurarch-lint@v1
+        with:
+          comment-on-pr: true
+          fail-on-warn: false
