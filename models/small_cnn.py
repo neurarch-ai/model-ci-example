@@ -23,10 +23,10 @@ class SmallCNN(nn.Module):
             conv_bn_relu(3, 32),
             conv_bn_relu(32, 32),
             nn.MaxPool2d(2),
-            conv_bn_relu(32, 64),
-            conv_bn_relu(64, 64),
+            conv_bn_relu(32, 256),
+            conv_bn_relu(256, 256),
             nn.MaxPool2d(2),
-            conv_bn_relu(64, 128),
+            conv_bn_relu(256, 128),
             nn.AdaptiveAvgPool2d(1),
         )
         self.classifier = nn.Sequential(
