@@ -55,6 +55,33 @@ jobs:
 
 The models it plans, and the input each one traces with, are listed in [`.neurarch.yml`](.neurarch.yml).
 
+## The third gate: a weekly report on every model
+
+The two gates above only ever look at what a pull request touched. [`.github/workflows/neurarch-report.yml`](.github/workflows/neurarch-report.yml) runs the same Action in `mode: report` every Monday, traces **every** model in `.neurarch.yml`, and keeps one issue up to date with what this repository owns: layers, params, shape, whether each model still runs, GPU fit, estimated cost and fingerprint, plus every blocker and warning, what moved since the previous report, and any parameter count in the docs that the trace disagrees with.
+
+```yaml
+name: Neurarch weekly report
+on:
+  schedule:
+    - cron: '0 13 * * 1'    # Mondays, 13:00 UTC
+  workflow_dispatch:         # and on demand
+
+permissions:
+  contents: read
+  issues: write              # the report is one issue, upserted on every run
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: neurarch-ai/neurarch-bot@v0
+        with:
+          mode: report
+```
+
+It is one issue, not one a week: the body is rewritten in place and a short comment underneath names what moved. Report mode never fails the job, because a record that turns the repository red every Monday gets its schedule deleted. See it here: [Neurarch weekly model report](../../issues?q=is%3Aissue+Neurarch+weekly+model+report).
+
 ## What is in here
 
 - [`models/tiny_gpt.py`](models/tiny_gpt.py): a small decoder-only transformer, `embed_dim=384`, `num_heads=6`, raw logits into `CrossEntropyLoss`.
