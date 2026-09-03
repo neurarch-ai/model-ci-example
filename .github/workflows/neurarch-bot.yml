@@ -1,0 +1,15 @@
+name: Neurarch plan
+on: pull_request
+
+permissions:
+  contents: read
+  pull-requests: write   # lets the bot post and update its plan comment
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # the bot needs the base commit to trace it and diff
+      - uses: neurarch-ai/neurarch-bot@v0

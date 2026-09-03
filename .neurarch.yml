@@ -1,0 +1,8 @@
+# Models neurarch-bot plans on every pull request that touches them.
+# path is file.py:ClassOrFactory (constructed with no arguments); input is batch first,
+# with :long for token ids.
+models:
+  - path: models/tiny_gpt.py:TinyGPT
+    input: "1,32:long"
+  - path: models/small_cnn.py:SmallCNN
+    input: 1,3,32,32
