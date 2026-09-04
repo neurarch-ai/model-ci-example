@@ -1,0 +1,19 @@
+# The config writes itself. Run this once, from the Actions tab, on a repository that has no
+# .neurarch.yml: the bot walks the repository, traces every model it can construct, and opens
+# a pull request adding the config with those models in it and house rules whose numbers came
+# from that measurement. It does nothing at all if a .neurarch.yml is already there.
+name: Neurarch init
+on: workflow_dispatch
+
+permissions:
+  contents: write        # to push the branch the config arrives on
+  pull-requests: write   # to open the pull request
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: neurarch-ai/neurarch-bot@v0
+        with:
+          mode: init
