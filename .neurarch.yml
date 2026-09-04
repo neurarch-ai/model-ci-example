@@ -1,8 +1,18 @@
 # Models neurarch-bot plans on every pull request that touches them.
 # path is file.py:ClassOrFactory (constructed with no arguments); input is batch first,
 # with :long for token ids.
+
+# House rules. These are this repository's own lines, not Neurarch's: the plan turns them
+# into blockers and warnings and quotes them back as they are written here. They need no API
+# key, because a policy can only make a verdict stricter and never more permissive.
+policy:
+  forbid_types: [softmax]   # a Softmax head in front of CrossEntropyLoss is the classic one
+
 models:
   - path: models/tiny_gpt.py:TinyGPT
     input: "1,32:long"
   - path: models/small_cnn.py:SmallCNN
     input: 1,3,32,32
+    policy:
+      max_params: 500K      # this classifier's own cap; a model's policy merges over the
+                            # top-level block key by key, so softmax is still forbidden here

@@ -40,8 +40,8 @@ name: Neurarch plan
 on: pull_request
 
 permissions:
-  contents: read
-  pull-requests: write   # lets the bot post and update its plan comment
+  contents: write        # lets the bot push the branch its fix lives on
+  pull-requests: write   # lets the bot post its plan comment and open the fix pull request
 
 jobs:
   plan:
@@ -51,9 +51,33 @@ jobs:
         with:
           fetch-depth: 0          # the bot needs the base commit to trace it and diff
       - uses: neurarch-ai/neurarch-bot@v0
+        with:
+          fix: true
+          api-key: ${{ secrets.NEURARCH_API_KEY }}
 ```
 
-The models it plans, and the input each one traces with, are listed in [`.neurarch.yml`](.neurarch.yml).
+The models it plans, and the input each one traces with, are listed in [`.neurarch.yml`](.neurarch.yml), along with this repository's own house rules:
+
+```yaml
+policy:
+  forbid_types: [softmax]   # a Softmax head in front of CrossEntropyLoss is the classic one
+
+models:
+  - path: models/small_cnn.py:SmallCNN
+    input: 1,3,32,32
+    policy:
+      max_params: 500K      # this classifier's own cap
+```
+
+A policy line is graded in the same plan as everything else and quoted back as it is written. A model's own `policy` merges over the top-level block key by key, so the 500K cap on the CNN does not drop the house rule about softmax, and the 13.5M-parameter transformer in the same config is not failed by a cap that was never meant for it.
+
+### And the fix, when there is one
+
+`fix: true` is the part that is not a message. On a blocker the bot patches the model in a scratch worktree, **traces it again and plans it again**, and pushes a branch only if that second plan is legal and the parameter count is within 10 percent of this pull request's own head. Then it opens `Fix the blocker in #N` into the branch that broke it, and adds one line to the plan comment linking it. When no patch survives that gate it pushes nothing and says what it tried.
+
+Two sources, in order. The **exact patch** comes from `suggest_fix` in [neurarch-mcp](https://github.com/neurarch-ai/neurarch-mcp) and costs nothing. The **proposal** comes from `POST /api/v1/fix` and is metered against the API key owner's agent quota, so with no `NEURARCH_API_KEY` secret set it is skipped and the comment says the source was skipped rather than pretending it was tried. That is the state of this repository today: no secret, so only the free source runs.
+
+A pull request opened with the default `GITHUB_TOKEN` does not trigger workflows, so the fix pull request arrives with no `Neurarch plan` check of its own even though the bot verified the patch before pushing it. Pass a PAT as `github-token` to get one.
 
 ## The third gate: a weekly report on every model
 
