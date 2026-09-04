@@ -39,7 +39,6 @@ class SmallCNN(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.features(x)
         x = self.classifier(x)
-        x = self.softmax(x)
         return x
 
 
