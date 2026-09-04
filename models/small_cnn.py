@@ -1,7 +1,7 @@
 """A small CIFAR-10 CNN with BatchNorm.
 
 Each stage is Conv -> BatchNorm -> ReLU, with the conv bias off because
-BatchNorm carries its own shift term.
+BatchNorm carries its own shift term. The head returns class probabilities.
 """
 
 import torch
@@ -34,9 +34,13 @@ class SmallCNN(nn.Module):
             nn.Dropout(dropout),
             nn.Linear(128, num_classes),
         )
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.classifier(self.features(x))
+        x = self.features(x)
+        x = self.classifier(x)
+        x = self.softmax(x)
+        return x
 
 
 def loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
