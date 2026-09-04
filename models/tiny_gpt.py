@@ -19,7 +19,7 @@ class Block(nn.Module):
         super().__init__()
         self.ln1 = nn.LayerNorm(EMBED_DIM)
         self.attn = nn.MultiheadAttention(
-            embed_dim=384, num_heads=6, dropout=dropout, batch_first=True
+            embed_dim=384, num_heads=5, dropout=dropout, batch_first=True
         )
         self.ln2 = nn.LayerNorm(EMBED_DIM)
         self.mlp = nn.Sequential(
@@ -53,6 +53,7 @@ class TinyGPT(nn.Module):
         self.blocks = nn.ModuleList([Block(dropout) for _ in range(num_layers)])
         self.ln_f = nn.LayerNorm(EMBED_DIM)
         self.head = nn.Linear(EMBED_DIM, vocab_size, bias=False)
+        self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, idx: torch.Tensor) -> torch.Tensor:
         _, t = idx.shape
@@ -64,7 +65,7 @@ class TinyGPT(nn.Module):
         )
         for block in self.blocks:
             x = block(x, causal_mask)
-        logits = self.head(self.ln_f(x))
+        logits = self.softmax(self.head(self.ln_f(x)))
         return logits
 
 
