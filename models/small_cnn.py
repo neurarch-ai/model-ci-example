@@ -17,22 +17,22 @@ def conv_bn_relu(in_ch: int, out_ch: int) -> nn.Sequential:
 
 
 class SmallCNN(nn.Module):
-    def __init__(self, num_classes: int = 10, dropout: float = 0.3):
+    def __init__(self, num_classes: int = 10, dropout: float = 0.4):
         super().__init__()
         self.features = nn.Sequential(
             conv_bn_relu(3, 32),
             conv_bn_relu(32, 32),
             nn.MaxPool2d(2),
-            conv_bn_relu(32, 64),
-            conv_bn_relu(64, 64),
+            conv_bn_relu(32, 256),
+            conv_bn_relu(256, 256),
             nn.MaxPool2d(2),
-            conv_bn_relu(64, 128),
+            conv_bn_relu(256, 192),
             nn.AdaptiveAvgPool2d(1),
         )
         self.classifier = nn.Sequential(
             nn.Flatten(),
             nn.Dropout(dropout),
-            nn.Linear(128, num_classes),
+            nn.Linear(192, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
