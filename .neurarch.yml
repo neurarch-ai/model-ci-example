@@ -11,6 +11,9 @@ policy:
 models:
   - path: models/tiny_gpt.py:TinyGPT
     input: "1,32:long"
+  - path: models/mnist_net.py:MnistNet
+    input: 1,1,28,28          # one greyscale 28x28 channel, so `dataset=mnist` fits it
+
   - path: models/small_cnn.py:SmallCNN
     input: 1,3,32,32
     policy:
