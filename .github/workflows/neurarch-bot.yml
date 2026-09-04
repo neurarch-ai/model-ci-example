@@ -1,12 +1,16 @@
-name: Neurarch plan
-on: pull_request
+name: Neurarch
+on:
+  pull_request:
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write        # lets the bot push the branch its fix lives on
-  pull-requests: write   # lets the bot post its plan comment and open the fix pull request
+  pull-requests: write   # lets the bot post its comments and open the fix pull request
 
 jobs:
   plan:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +19,24 @@ jobs:
       - uses: neurarch-ai/neurarch-bot@v0
         with:
           fix: true
-          # Optional. Without it the bot still tries the exact patch from neurarch-mcp
-          # suggest_fix, which costs nothing; the server's proposal source is metered
-          # against the key owner's agent quota and is skipped, and the comment says so.
+          # Optional for the plan. Without it the bot still tries the exact patch from
+          # neurarch-mcp suggest_fix, which costs nothing; the server's proposal source is
+          # metered against the key owner's agent quota and is skipped, and the comment says so.
           api-key: ${{ secrets.NEURARCH_API_KEY }}
+
+  # `/neurarch train` on a pull request comment: one real GPU run, and the curve posted back
+  # into the comment as the epochs arrive. It spends the key owner's money, so the Action
+  # refuses anyone without write access before it looks at anything else.
+  train:
+    if: github.event_name == 'issue_comment' && github.event.issue.pull_request != null && startsWith(github.event.comment.body, '/neurarch train')
+    runs-on: ubuntu-latest
+    steps:
+      # A comment event checks out the default branch, which is not the model anybody asked
+      # about. This is the merge commit of the pull request the comment is on.
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/merge
+      - uses: neurarch-ai/neurarch-bot@v0
+        with:
+          mode: train
+          api-key: ${{ secrets.NEURARCH_API_KEY }}   # required: there is no keyless training
