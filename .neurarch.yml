@@ -1,0 +1,42 @@
+# Neurarch config, written by neurarch-bot 0.5.0. It lists the models found in this repository
+# and the house rules suggested for them.
+#
+# The models are measurement: each one was constructed and traced at the commit this was written
+# from, and the numbers in the comments are what came back. The policy block at the bottom is
+# where a rule of yours goes; the lines there now are a starting point, not a Neurarch default.
+#
+# Every supported key, with a worked example:
+# https://github.com/neurarch-ai/neurarch-bot/blob/main/examples/.neurarch.yml
+
+models:
+  # SmallCNN: 21 layers, 141.4K params, fits a T4. Traced with input 1,3,32,32.
+  - path: models/small_cnn.py:SmallCNN
+    input: 1,3,32,32
+
+  # TinyGPT: 42 layers, 13.5M params, fits a T4. Traced with input 1,32:long.
+  - path: models/tiny_gpt.py:TinyGPT
+    input: "1,32:long"
+
+  # Found but not listed. Each of these is a model this bot could not construct and trace on its
+  # own; the reason is on the line above it. Fix the entry point or the input spec, uncomment,
+  # and it is planned like the rest.
+  # Block: `TinyGPT` constructs it in the same file, so it is a part of that model rather than a
+  # model. Uncomment it if you plan it on its own.
+  # - path: models/tiny_gpt.py:Block
+  #   input: "1,32:long"
+
+# House rules. These are yours, not Neurarch's: the plan turns each line into a blocker or a
+# warning on every pull request, and quotes it back exactly as written here. They need no API
+# key, because a policy can only make a verdict stricter and never more permissive.
+policy:
+  # Measured: the largest model traced here is `models/tiny_gpt.py:TinyGPT` at 13.5M params, so
+  # this blocks a change that grows one past what this repository runs today.
+  max_params: 20M
+  # Measured: every model traced here fits a T4 (16GB), the smallest card Neurarch prices, so
+  # this blocks a change that stops fitting it.
+  must_fit: T4
+  # Suggestion, not measurement: a Softmax in front of CrossEntropyLoss, or a Sigmoid in front
+  # of BCEWithLogitsLoss, applies the activation twice: the model trains, converges to
+  # something, and is wrong the whole time. Nothing was measured for this line, so it arrives
+  # commented out.
+  # forbid_types: [softmax, sigmoid]
