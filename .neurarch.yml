@@ -9,6 +9,18 @@ policy:
   forbid_types: [softmax]   # a Softmax head in front of CrossEntropyLoss is the classic one
 
 models:
+  - path: models/doc_lm.py:DocLM
+    input: "1,32:long"        # traced short on a CPU runner; the job below sets the real length
+    # The training job this model is reserved for. Each value is read from the job's own
+    # config at the commit being planned, so the plan sizes the run that will be submitted
+    # and the check turns red when a change stops it fitting the card it reserves.
+    job:
+      gpu: configs/pretrain.yaml:gpu
+      batch: configs/pretrain.yaml:batch_size
+      seq_len: configs/pretrain.yaml:seq_len
+      grad_accum: configs/pretrain.yaml:grad_accum
+      epochs: configs/pretrain.yaml:epochs
+      samples: configs/pretrain.yaml:train_samples
   - path: models/tiny_gpt.py:TinyGPT
     input: "1,32:long"
   - path: models/mnist_net.py:MnistNet
