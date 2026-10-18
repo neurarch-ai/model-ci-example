@@ -4,7 +4,7 @@
 # job that will actually be submitted.
 gpu: A10G               # 24 GB
 batch_size: 32
-seq_len: 1024
+seq_len: 2048
 grad_accum: 1
 epochs: 3
 train_samples: 400000   # documents, after dedup
