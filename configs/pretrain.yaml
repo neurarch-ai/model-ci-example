@@ -1,0 +1,11 @@
+# The pretraining job for models/doc_lm.py:DocLM.
+# The scheduler reserves one card of this type per run; the job trains at this batch and
+# sequence length. .neurarch.yml reads these lines, so the plan on a pull request sizes the
+# job that will actually be submitted.
+gpu: A10G               # 24 GB
+batch_size: 32
+seq_len: 1024
+grad_accum: 1
+epochs: 3
+train_samples: 400000   # documents, after dedup
+lr: 6.0e-4
